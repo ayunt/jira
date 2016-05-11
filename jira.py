@@ -3,7 +3,7 @@ import requests
 import json
 import sys
 
-SERVER_IP = '54.191.144.208:8080'
+SERVER_IP = '54.187.244.122:8080'
 
 if (sys.argv[1] == 'CRITICAL' and sys.argv[2] == 'HARD'):
         headers = {'Content-Type': 'application/json'}
@@ -19,7 +19,13 @@ if (sys.argv[1] == 'CRITICAL' and sys.argv[2] == 'HARD'):
                                 }
                         }
                    }
-        json_response = requests.post('http://{}/rest/api/2/issue/'.format(SERVER_IP), auth=('nagios', 'nagios'), data=json.dumps(payload), headers=headers)
+        url = 'http://{}/rest/api/2/issue/'.format(SERVER_IP)
+        json_response = requests.post(
+            url,
+            auth=('nagios', 'nagios'),
+            data=json.dumps(payload),
+            headers=headers
+            )
         decoded = json_response.json()
         MySQL_ID = decoded.get('key')
         # Write the ticket number to the file. This value will be used to close the ticket
@@ -30,7 +36,7 @@ if (sys.argv[1] == 'CRITICAL' and sys.argv[2] == 'HARD'):
         f = open("/home/ayunt/jira.log", "a")
         args = sys.argv[1:]
         args = " ".join(str(x) for x in args)
-        f.write("{}\nThe ticket {} has been created\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n".format(args, MySQL_ID))
+        f.write("{}\nThe ticket {} has been created\n{:*^40}\n".format(args, MySQL_ID, ''))
         f.close()
         sys.exit()
 else:
@@ -58,12 +64,18 @@ else:
                  "id": "5"
                         }
         }
-        closeResponce = requests.post('http://{}/rest/api/2/issue/{}/transitions'.format(SERVER_IP, MySQL_ID), auth=('nagios', 'nagios'), data=json.dumps(mysql_up), headers=headers)
-        # Read the ticket number from the file in order to close the correspondind ticket
+        url = 'http://{}/rest/api/2/issue/{}/transitions'.format(SERVER_IP, MySQL_ID)
+        closeResponce = requests.post(
+            url,
+            auth=('nagios', 'nagios'),
+            data=json.dumps(mysql_up),
+            headers=headers
+            )
+        # Read the ticket number from the file in order to close the corresponding ticket
         f = open("/home/ayunt/jira.log", "a")
         args = sys.argv[1:]
         args = " ".join(str(x) for x in args)
-        f.write("{}\nThe ticket {} has been closed\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n".format(args, MySQL_ID))
+        f.write("{}\nThe ticket {} has been closed\n{:*^40}\n".format(args, MySQL_ID, ''))
         f.close()
         sys.exit()
 
